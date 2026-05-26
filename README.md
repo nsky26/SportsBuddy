@@ -43,6 +43,12 @@ Alternatively, you can run the platform-specific scripts:
 - **iOS**: `npm run ios`
 - **Web**: `npm run web`
 
+## 🧪 Linting and Type Checking
+
+To ensure code quality and type safety, the project uses ESLint and TypeScript compilation checks:
+- **Linting**: Run `npm run lint` to scan the codebase for style and quality issues.
+- **Type Checking**: Run `npm run typecheck` to run the TypeScript compiler in no-emit mode.
+
 ## 🛠 Tech Stack
 
 - **React Native**: ^0.85.3
