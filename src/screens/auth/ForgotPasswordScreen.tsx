@@ -10,8 +10,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSignIn } from '@clerk/clerk-expo';
 import { AuthStackParamList } from '../../utils/types';
-import { forgotPassword } from '../../firebase/auth';
 import { InputField, PrimaryButton } from '../../components/common';
 import { Colors } from '../../theme';
 import { isValidEmail } from '../../utils/helpers';
@@ -26,17 +26,25 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
 
+  const { signIn, isLoaded } = useSignIn();
+
   async function handleReset() {
     if (!email) { setError('Email is required'); return; }
     if (!isValidEmail(email)) { setError('Enter a valid email'); return; }
+    if (!isLoaded) return;
     setError('');
     setLoading(true);
     try {
-      await forgotPassword(email.trim());
+      // Clerk sends a password reset email with a one-time code
+      await signIn.create({
+        strategy: 'reset_password_email_code',
+        identifier: email.trim(),
+      });
       setSent(true);
     } catch (err: any) {
+      const clerkCode = err?.errors?.[0]?.code ?? '';
       const msg =
-        err.code === 'auth/user-not-found'
+        clerkCode === 'form_identifier_not_found'
           ? 'No account found with this email'
           : 'Failed to send reset email. Try again.';
       Alert.alert('Error', msg);

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
-import { subscribeToAuthState, getUserProfile } from '../firebase/auth';
+import { useAuth as useClerkAuth, useUser } from '@clerk/clerk-expo';
+import { getUserProfile, createUserProfileIfMissing } from '../firebase/auth';
 import { useAuthStore } from '../store/authStore';
 
 interface AuthContextValue {
@@ -9,46 +10,50 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({ isReady: false });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { setUser, setLoading } = useAuthStore();
+  const { isSignedIn, isLoaded } = useClerkAuth();
+  const { user: clerkUser } = useUser();
+  const { setUser, setLoading, logout } = useAuthStore();
 
   useEffect(() => {
-    setLoading(true);
+    // Clerk hasn't finished loading yet — stay in loading state
+    if (!isLoaded) {
+      setLoading(true);
+      return;
+    }
 
-    const unsubscribe = subscribeToAuthState(async (firebaseUser) => {
-      if (firebaseUser) {
+    if (isSignedIn && clerkUser) {
+      const uid = clerkUser.id;
+      const email = clerkUser.emailAddresses[0]?.emailAddress ?? '';
+      const displayName = clerkUser.fullName ?? clerkUser.username ?? 'User';
+
+      // Fetch or create the Firestore user profile (best-effort — navigation
+      // is driven by Clerk's isSignedIn, not this Firestore round-trip)
+      (async () => {
         try {
-          const profile = await getUserProfile(firebaseUser.uid);
+          setLoading(true);
+          const profile = await getUserProfile(uid);
           if (profile) {
             setUser(profile);
           } else {
-            // User exists in Auth but not Firestore — create minimal profile
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              displayName: firebaseUser.displayName || 'User',
-              sports: [],
-              stats: { gamesPlayed: 0, gamesWon: 0, winRate: 0, teammates: 0 },
-              achievements: [],
-              rating: 0,
-              reviewCount: 0,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            });
+            // First sign-in — bootstrap Firestore profile from Clerk identity
+            const created = await createUserProfileIfMissing(uid, displayName, email);
+            setUser(created);
           }
         } catch (error) {
-          console.error('Error fetching user profile:', error);
-          setUser(null);
+          console.error('[AuthContext] Error loading user profile:', error);
+          // Don't set user=null here — the user IS signed in via Clerk.
+          // Just mark loading done so the app doesn't spin forever.
+          setLoading(false);
         }
-      } else {
-        setUser(null);
-      }
-    });
-
-    return unsubscribe;
-  }, [setUser, setLoading]);
+      })();
+    } else {
+      // Signed out
+      logout();
+    }
+  }, [isSignedIn, isLoaded, clerkUser, setUser, setLoading, logout]);
 
   return (
-    <AuthContext.Provider value={{ isReady: true }}>
+    <AuthContext.Provider value={{ isReady: isLoaded }}>
       {children}
     </AuthContext.Provider>
   );

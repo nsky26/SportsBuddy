@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@clerk/clerk-expo": "^2.19.31",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/native": "^7.2.4",
@@ -14,7 +15,10 @@
     "expo-linear-gradient": "~56.0.4",
     "expo-location": "~56.0.13",
     "expo-notifications": "~56.0.13",
+    "expo-secure-store": "^56.0.4",
     "expo-status-bar": "~56.0.4",
+    "expo-web-browser": "~56.0.4",
+    "expo-auth-session": "~56.0.4",
     "firebase": "^12.13.0",
     "lottie-react-native": "^7.3.8",
     "react": "19.2.3",
