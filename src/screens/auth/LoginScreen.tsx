@@ -8,19 +8,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as WebBrowser from 'expo-web-browser';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSignIn, useOAuth } from '@clerk/clerk-expo';
 import { AuthStackParamList } from '../../utils/types';
-import { loginUser } from '../../firebase/auth';
 import { useAuthStore } from '../../store/authStore';
-import { getUserProfile } from '../../firebase/auth';
 import { InputField, PrimaryButton } from '../../components/common';
 import { Colors, BorderRadius } from '../../theme';
 import { isValidEmail, isValidPassword } from '../../utils/helpers';
 
-// Simple SVG-like icons using View
+// Simple icon components
 function MailIcon() {
   return (
     <View style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
@@ -42,14 +41,65 @@ type Props = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 };
 
+WebBrowser.maybeCompleteAuthSession();
+
+function useWarmUpBrowser() {
+  React.useEffect(() => {
+    // Warm up the android browser to improve UX
+    // https://docs.expo.dev/guides/authentication/#warm-up-browser
+    void WebBrowser.warmUpAsync();
+    return () => {
+      void WebBrowser.coolDownAsync();
+    };
+  }, []);
+}
+
 export function LoginScreen({ navigation }: Props) {
+  useWarmUpBrowser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { setUser, setError } = useAuthStore();
+  const { setError } = useAuthStore();
+  const { signIn, setActive, isLoaded } = useSignIn();
+
+  // Clerk OAuth hooks for Google and Apple
+  const { startOAuthFlow: startGoogleFlow } = useOAuth({ strategy: 'oauth_google' });
+  const { startOAuthFlow: startAppleFlow } = useOAuth({ strategy: 'oauth_apple' });
+
+  async function handleGoogleSignIn() {
+    try {
+      setLoading(true);
+      setError(null);
+      const { createdSessionId, setActive: setOAuthActive } = await startGoogleFlow();
+      if (createdSessionId && setOAuthActive) {
+        await setOAuthActive({ session: createdSessionId });
+      }
+    } catch (err: any) {
+      console.error('[Google OAuth Error]', err);
+      Alert.alert('Google Sign-In', 'An error occurred during Google sign-in. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleAppleSignIn() {
+    try {
+      setLoading(true);
+      setError(null);
+      const { createdSessionId, setActive: setOAuthActive } = await startAppleFlow();
+      if (createdSessionId && setOAuthActive) {
+        await setOAuthActive({ session: createdSessionId });
+      }
+    } catch (err: any) {
+      console.error('[Apple OAuth Error]', err);
+      Alert.alert('Apple Sign-In', 'An error occurred during Apple sign-in. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function validate(): boolean {
     const newErrors: typeof errors = {};
@@ -65,33 +115,29 @@ export function LoginScreen({ navigation }: Props) {
   }
 
   async function handleLogin() {
-    if (!validate()) return;
+    if (!validate() || !isLoaded) return;
     setLoading(true);
     setError(null);
     try {
-      const firebaseUser = await loginUser(email.trim(), password);
-      const profile = await getUserProfile(firebaseUser.uid);
-      if (profile) {
-        setUser(profile);
+      // Attempt sign-in via Clerk
+      const result = await signIn.create({
+        identifier: email.trim(),
+        password,
+      });
+
+      if (result.status === 'complete') {
+        // Activate the session
+        await setActive({ session: result.createdSessionId });
       } else {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || email,
-          displayName: firebaseUser.displayName || 'User',
-          sports: [],
-          stats: { gamesPlayed: 0, gamesWon: 0, winRate: 0, teammates: 0 },
-          achievements: [],
-          rating: 0,
-          reviewCount: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+        // MFA or other steps required — handle gracefully
+        Alert.alert('Login', 'Additional verification required. Please check your email.');
       }
     } catch (err: any) {
+      const clerkCode = err?.errors?.[0]?.code ?? '';
       const msg =
-        err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password'
+        clerkCode === 'form_password_incorrect' || clerkCode === 'form_identifier_not_found'
           ? 'Invalid email or password'
-          : err.code === 'auth/too-many-requests'
+          : clerkCode === 'too_many_requests'
           ? 'Too many attempts. Try again later.'
           : 'Login failed. Please try again.';
       setError(msg);
@@ -176,12 +222,14 @@ export function LoginScreen({ navigation }: Props) {
           <View style={styles.socialButtons}>
             <PrimaryButton
               title="Continue with Google"
-              onPress={() => Alert.alert('Coming Soon', 'Google sign-in will be available soon.')}
+              onPress={handleGoogleSignIn}
+              loading={loading}
               variant="outline"
             />
             <PrimaryButton
               title="Continue with Apple"
-              onPress={() => Alert.alert('Coming Soon', 'Apple sign-in will be available soon.')}
+              onPress={handleAppleSignIn}
+              loading={loading}
               variant="outline"
             />
           </View>

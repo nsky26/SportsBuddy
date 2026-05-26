@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useClerk } from '@clerk/clerk-expo';
 import { useAuthStore } from '../store/authStore';
-import { logoutUser } from '../firebase/auth';
 import { GlassCard, Avatar, PrimaryButton } from '../components/common';
 import { Colors, BorderRadius, Spacing } from '../theme';
 
@@ -31,6 +31,7 @@ const MOCK_MATCHES = [
 
 export function ProfileScreen() {
   const { user, logout } = useAuthStore();
+  const { signOut } = useClerk();
 
   const stats = [
     { label: 'Games Played', value: String(user?.stats?.gamesPlayed || 127), icon: '📅' },
@@ -46,8 +47,8 @@ export function ProfileScreen() {
         style: 'destructive',
         onPress: async () => {
           try {
-            await logoutUser();
-            logout();
+            await signOut();  // End the Clerk session
+            logout();         // Clear local Zustand state
           } catch {
             Alert.alert('Error', 'Failed to sign out. Try again.');
           }

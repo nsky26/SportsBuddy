@@ -11,8 +11,9 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSignUp } from '@clerk/clerk-expo';
 import { AuthStackParamList } from '../../utils/types';
-import { registerUser } from '../../firebase/auth';
+import { createUserProfileIfMissing } from '../../firebase/auth';
 import { useAuthStore } from '../../store/authStore';
 import { InputField, PrimaryButton } from '../../components/common';
 import { Colors } from '../../theme';
@@ -32,6 +33,7 @@ export function RegisterScreen({ navigation }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { setUser, setError } = useAuthStore();
+  const { signUp, setActive, isLoaded } = useSignUp();
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
@@ -49,26 +51,43 @@ export function RegisterScreen({ navigation }: Props) {
   }
 
   async function handleRegister() {
-    if (!validate()) return;
+    if (!validate() || !isLoaded) return;
     setLoading(true);
     try {
-      const firebaseUser = await registerUser(email.trim(), password, displayName.trim());
-      setUser({
-        uid: firebaseUser.uid,
-        email: firebaseUser.email || email,
-        displayName: displayName.trim(),
-        sports: [],
-        stats: { gamesPlayed: 0, gamesWon: 0, winRate: 0, teammates: 0 },
-        achievements: [],
-        rating: 0,
-        reviewCount: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      // Create the Clerk account
+      const result = await signUp.create({
+        emailAddress: email.trim(),
+        password,
+        firstName: displayName.trim().split(' ')[0],
+        lastName: displayName.trim().split(' ').slice(1).join(' ') || undefined,
       });
+
+      if (result.status === 'complete') {
+        // Activate the new session
+        await setActive({ session: result.createdSessionId });
+
+        // Bootstrap the Firestore user profile
+        const uid = result.createdUserId ?? '';
+        const profile = await createUserProfileIfMissing(
+          uid,
+          displayName.trim(),
+          email.trim()
+        );
+        setUser(profile);
+      } else {
+        // Email verification required
+        Alert.alert(
+          'Verify your email',
+          'Please check your inbox and verify your email to complete registration.'
+        );
+      }
     } catch (err: any) {
+      const clerkCode = err?.errors?.[0]?.code ?? '';
       const msg =
-        err.code === 'auth/email-already-in-use'
+        clerkCode === 'form_identifier_exists'
           ? 'This email is already registered'
+          : clerkCode === 'form_password_pwned'
+          ? 'This password is too common. Please choose a stronger one.'
           : 'Registration failed. Please try again.';
       setError(msg);
       Alert.alert('Registration Failed', msg);
