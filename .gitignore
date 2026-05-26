@@ -33,6 +33,7 @@ expo-env.d.ts
 # Environment variables
 # =========================
 .env
+
 .env.*
 !.env.example
 
@@ -66,7 +67,10 @@ Thumbs.db
 # Custom project files
 # =========================
 skills-lock.json
-agents/
+.agents/
+package-lock.json
+package.json
+
 
 # =========================
 # Misc

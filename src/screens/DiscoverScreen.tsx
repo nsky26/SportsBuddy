@@ -50,7 +50,6 @@ export function DiscoverScreen({ navigation }: Props) {
 
         {/* Search */}
         <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={styles.searchInput}
             placeholder="Search events..."
@@ -76,7 +75,7 @@ export function DiscoverScreen({ navigation }: Props) {
                 style={[styles.filterChip, selectedSport === s.name && styles.filterChipActive]}
               >
                 <Text style={[styles.filterChipText, selectedSport === s.name && styles.filterChipTextActive]}>
-                  {s.icon} {s.name}
+                  {s.name}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -118,16 +117,15 @@ export function DiscoverScreen({ navigation }: Props) {
                       <Text style={styles.eventSport}>{event.sport}</Text>
                       <Text style={styles.eventTitle}>{event.title}</Text>
                       <View style={styles.locationRow}>
-                        <Text style={styles.locationIcon}>📍</Text>
                         <Text style={styles.locationText}>{event.location}</Text>
-                        <Text style={styles.distanceText}>• {event.distance}</Text>
+                        <Text style={styles.distanceText}>· {event.distance}</Text>
                       </View>
                     </View>
                     <Badge label={event.skillLevel} />
                   </View>
                   <View style={styles.eventBottom}>
-                    <Text style={styles.eventMeta}>🕐 {event.date}</Text>
-                    <Text style={styles.eventMeta}>👥 {event.players}/{event.maxPlayers}</Text>
+                    <Text style={styles.eventMeta}>{event.date}</Text>
+                    <Text style={styles.eventMeta}>{event.players}/{event.maxPlayers} players</Text>
                     <View style={styles.joinButton}>
                       <Text style={styles.joinButtonText}>Join</Text>
                     </View>
@@ -173,11 +171,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     gap: 10,
   },
-  searchIcon: { fontSize: 16 },
   searchInput: {
     flex: 1,
     color: Colors.foreground,
-    fontSize: 14,
+    fontSize: 15,
     height: '100%',
   },
   filterRow: {
@@ -238,9 +235,8 @@ const styles = StyleSheet.create({
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
-  locationIcon: { fontSize: 11 },
   locationText: {
     fontSize: 12,
     color: Colors.mutedForeground,

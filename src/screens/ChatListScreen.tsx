@@ -21,11 +21,11 @@ const MOCK_CHATS = [
   {
     id: 'chat_1',
     eventTitle: '5v5 Pickup Game',
-    lastMessage: 'On my way now 🏃',
+    lastMessage: 'On my way now',
     time: '5:45 PM',
     unread: 3,
     participants: ['Marcus T.', 'Alex C.', 'Sarah K.'],
-    sport: '🏀',
+    sport: 'BB',
   },
   {
     id: 'chat_2',
@@ -34,7 +34,7 @@ const MOCK_CHATS = [
     time: '2:30 PM',
     unread: 0,
     participants: ['James W.', 'Emily R.'],
-    sport: '⚽',
+    sport: 'SC',
   },
   {
     id: 'chat_3',
@@ -43,7 +43,7 @@ const MOCK_CHATS = [
     time: 'Yesterday',
     unread: 1,
     participants: ['David L.', 'Anna M.'],
-    sport: '🎾',
+    sport: 'TN',
   },
 ];
 
@@ -54,7 +54,7 @@ export function ChatListScreen({ navigation }: Props) {
         <View style={styles.header}>
           <Text style={styles.title}>Messages</Text>
           <TouchableOpacity style={styles.newChatButton}>
-            <Text style={styles.newChatIcon}>✏️</Text>
+            <Text style={styles.newChatIcon}>+</Text>
           </TouchableOpacity>
         </View>
 
@@ -101,7 +101,6 @@ export function ChatListScreen({ navigation }: Props) {
           )}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>💬</Text>
               <Text style={styles.emptyTitle}>No chats yet</Text>
               <Text style={styles.emptySubtitle}>Join a game to start chatting with teammates</Text>
             </View>
@@ -158,7 +157,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chatSportIcon: { fontSize: 24 },
+  chatSportIcon: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
   chatContent: { flex: 1 },
   chatTop: {
     flexDirection: 'row',
@@ -211,7 +214,6 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     gap: 12,
   },
-  emptyIcon: { fontSize: 48 },
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',

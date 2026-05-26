@@ -163,7 +163,7 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
 
         {/* Sport icon */}
         <View style={styles.sportIconContainer}>
-          <Text style={styles.sportIconEmoji}>🏀</Text>
+          <Text style={styles.sportIconLabel}>{event?.sport?.slice(0, 2).toUpperCase() ?? 'SP'}</Text>
         </View>
       </View>
 
@@ -182,12 +182,10 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
         {/* Info grid */}
         <View style={styles.infoGrid}>
           <GlassCard style={styles.infoCard}>
-            <Text style={styles.infoIcon}>📅</Text>
             <Text style={styles.infoLabel}>Date</Text>
             <Text style={styles.infoValue}>{formatDate(event.date)}</Text>
           </GlassCard>
           <GlassCard style={styles.infoCard}>
-            <Text style={styles.infoIcon}>🕐</Text>
             <Text style={styles.infoLabel}>Time</Text>
             <Text style={styles.infoValue}>{event.time}</Text>
           </GlassCard>
@@ -195,9 +193,6 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
 
         {/* Location */}
         <GlassCard style={styles.locationCard}>
-          <View style={styles.locationIcon}>
-            <Text style={styles.locationIconText}>📍</Text>
-          </View>
           <View style={styles.locationText}>
             <Text style={styles.locationName}>{event.location.name}</Text>
             {event.location.address && (
@@ -220,10 +215,9 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
           <View style={styles.hostInfo}>
             <View style={styles.hostNameRow}>
               <Text style={styles.hostName}>{event.organizerName}</Text>
-              <Text style={styles.verifiedIcon}>🛡️</Text>
             </View>
             <Text style={styles.hostMeta}>
-              ⭐ {event.organizerRating} • Host
+              {event.organizerRating} · Host
             </Text>
           </View>
           <View style={styles.hostBadge}>
@@ -259,9 +253,7 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
             ))}
             {[...Array(Math.min(emptySlots, 4))].map((_, i) => (
               <View key={`empty_${i}`} style={styles.playerItem}>
-                <View style={styles.emptySlot}>
-                  <Text style={styles.emptySlotIcon}>👤</Text>
-                </View>
+                <View style={styles.emptySlot} />
                 <Text style={styles.emptySlotText}>Open</Text>
               </View>
             ))}
@@ -278,9 +270,6 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
           }
         >
           <GlassCard style={styles.chatPreview}>
-            <View style={styles.chatIcon}>
-              <Text style={styles.chatIconText}>💬</Text>
-            </View>
             <View style={styles.chatInfo}>
               <Text style={styles.chatTitle}>Game Chat</Text>
               <Text style={styles.chatSubtitle}>Tap to join the conversation</Text>
@@ -364,7 +353,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 12,
   },
-  sportIconEmoji: { fontSize: 32 },
+  sportIconLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 0.5,
+  },
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: Spacing.lg, paddingTop: 8 },
   titleRow: {
@@ -395,10 +389,11 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 4,
   },
-  infoIcon: { fontSize: 16 },
   infoLabel: {
     fontSize: 11,
     color: Colors.mutedForeground,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   infoValue: {
     fontSize: 14,
@@ -412,15 +407,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
-  locationIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.primaryDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  locationIconText: { fontSize: 20 },
   locationText: { flex: 1 },
   locationName: {
     fontSize: 14,
@@ -463,7 +449,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.foreground,
   },
-  verifiedIcon: { fontSize: 14 },
   hostMeta: {
     fontSize: 13,
     color: Colors.mutedForeground,
@@ -549,11 +534,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.border,
     borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 4,
   },
-  emptySlotIcon: { fontSize: 20, opacity: 0.4 },
   emptySlotText: {
     fontSize: 10,
     color: Colors.mutedForeground + '80',
@@ -565,15 +547,6 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 16,
   },
-  chatIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.primaryDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chatIconText: { fontSize: 20 },
   chatInfo: { flex: 1 },
   chatTitle: {
     fontSize: 14,

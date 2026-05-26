@@ -115,7 +115,7 @@ export function CreateGameScreen({ navigation }: Props) {
                 style={styles.picker}
               >
                 <Text style={sport ? styles.pickerValue : styles.pickerPlaceholder}>
-                  {sport ? `${SPORTS.find((s) => s.name === sport)?.icon} ${sport}` : 'Select a sport'}
+                  {sport ? sport : 'Select a sport'}
                 </Text>
                 <Text style={styles.chevron}>{showSportPicker ? '▲' : '▼'}</Text>
               </TouchableOpacity>
@@ -128,7 +128,7 @@ export function CreateGameScreen({ navigation }: Props) {
                         onPress={() => { setSport(s.name); setShowSportPicker(false); }}
                         style={styles.dropdownItem}
                       >
-                        <Text style={styles.dropdownItemText}>{s.icon} {s.name}</Text>
+                        <Text style={styles.dropdownItemText}>{s.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
@@ -216,9 +216,6 @@ export function CreateGameScreen({ navigation }: Props) {
             {/* AI Suggestion */}
             {aiSuggestion ? (
               <GlassCard style={styles.aiCard} neonBorder>
-                <View style={styles.aiIconContainer}>
-                  <Text style={styles.aiIcon}>⚡</Text>
-                </View>
                 <View style={styles.aiContent}>
                   <Text style={styles.aiTitle}>AI Suggestion</Text>
                   <Text style={styles.aiText}>{aiSuggestion}</Text>
@@ -364,20 +361,9 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   aiCard: {
-    flexDirection: 'row',
     padding: 16,
-    gap: 12,
-    alignItems: 'flex-start',
+    gap: 8,
   },
-  aiIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.primaryDim,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  aiIcon: { fontSize: 20 },
   aiContent: { flex: 1 },
   aiTitle: {
     fontSize: 13,
