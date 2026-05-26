@@ -265,9 +265,6 @@ export function ChatScreen({ navigation, route }: Props) {
 
           {/* Input */}
           <GlassCard style={styles.inputArea}>
-            <TouchableOpacity style={styles.attachButton}>
-              <Text style={styles.attachIcon}>🖼️</Text>
-            </TouchableOpacity>
             <TextInput
               style={styles.input}
               placeholder="Type a message..."
@@ -277,15 +274,12 @@ export function ChatScreen({ navigation, route }: Props) {
               multiline
               maxLength={500}
             />
-            <TouchableOpacity style={styles.emojiButton}>
-              <Text style={styles.emojiIcon}>😊</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
               onPress={handleSend}
               disabled={!newMessage.trim()}
             >
-              <Text style={styles.sendIcon}>➤</Text>
+              <Text style={styles.sendIcon}>Send</Text>
             </TouchableOpacity>
           </GlassCard>
         </KeyboardAvoidingView>
@@ -536,8 +530,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   attachIcon: { fontSize: 18 },
-  input: {
-    flex: 1,
+  input: {    flex: 1,
     backgroundColor: 'rgba(24,24,30,0.5)',
     borderRadius: BorderRadius.full,
     borderWidth: 1,
@@ -548,15 +541,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     maxHeight: 100,
   },
-  emojiButton: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emojiIcon: { fontSize: 20 },
   sendButton: {
-    width: 40,
+    paddingHorizontal: 16,
     height: 40,
     borderRadius: 20,
     backgroundColor: Colors.primary,
@@ -573,7 +559,7 @@ const styles = StyleSheet.create({
   },
   sendIcon: {
     color: Colors.primaryForeground,
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '700',
   },
 });

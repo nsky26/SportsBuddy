@@ -21,7 +21,7 @@ import { aiService } from '../services/aiService';
 import { GlassCard, Avatar, Badge } from '../components/common';
 import { Colors, BorderRadius, Spacing } from '../theme';
 import { formatDate, timeAgo } from '../utils/helpers';
-import { SPORTS } from '../constants';
+import { SPORTS } from '../constants'; // still used by EventCard and MOCK_EVENTS
 import type { SportEvent, AIRecommendation } from '../utils/types';
 
 type Props = {
@@ -33,7 +33,6 @@ export function HomeScreen({ navigation }: Props) {
   const { events, setEvents, getFilteredEvents, searchQuery, setSearchQuery } = useEventsStore();
   const [aiPicks, setAiPicks] = useState<AIRecommendation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedSport, setSelectedSport] = useState<string | null>(null);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -62,12 +61,7 @@ export function HomeScreen({ navigation }: Props) {
   }, [user]);
 
   const filteredEvents = getFilteredEvents();
-  const displayEvents = selectedSport
-    ? filteredEvents.filter((e) => e.sport === selectedSport)
-    : filteredEvents;
-
-  // Use mock events if Firestore is empty (demo mode)
-  const eventsToShow = displayEvents.length > 0 ? displayEvents : MOCK_EVENTS;
+  const eventsToShow = filteredEvents.length > 0 ? filteredEvents : MOCK_EVENTS;
 
   return (
     <LinearGradient colors={['#0a0a0a', '#0f0f14', '#0a0a0a']} style={styles.container}>
@@ -98,9 +92,6 @@ export function HomeScreen({ navigation }: Props) {
 
           {/* Search */}
           <View style={styles.searchContainer}>
-            <View style={styles.searchIcon}>
-              <Text style={styles.searchIconText}>🔍</Text>
-            </View>
             <TextInput
               style={styles.searchInput}
               placeholder="Search games, players, or sports..."
@@ -108,37 +99,6 @@ export function HomeScreen({ navigation }: Props) {
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
-          </View>
-
-          {/* Sports Categories */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Sports</Text>
-              <TouchableOpacity>
-                <Text style={styles.seeAll}>See all ›</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.categoriesRow}
-            >
-              {SPORTS.map((sport) => (
-                <TouchableOpacity
-                  key={sport.id}
-                  onPress={() =>
-                    setSelectedSport(selectedSport === sport.name ? null : sport.name)
-                  }
-                  style={[
-                    styles.sportCard,
-                    selectedSport === sport.name && styles.sportCardActive,
-                  ]}
-                >
-                  <Text style={styles.sportIcon}>{sport.icon}</Text>
-                  <Text style={styles.sportName}>{sport.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
           </View>
 
           {/* Nearby Games */}
@@ -166,7 +126,7 @@ export function HomeScreen({ navigation }: Props) {
               <View style={styles.aiPicksHeader}>
                 <Text style={styles.sectionTitle}>AI Picks</Text>
                 <View style={styles.smartBadge}>
-                  <Text style={styles.smartBadgeText}>✨ Smart</Text>
+                  <Text style={styles.smartBadgeText}>Smart</Text>
                 </View>
               </View>
               <TouchableOpacity>
@@ -210,38 +170,39 @@ function EventCard({ event, onPress }: { event: SportEvent | typeof MOCK_EVENTS[
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
       <GlassCard style={styles.eventCard}>
-        <View style={styles.eventCardTop}>
-          <View>
-            <Text style={styles.eventSport}>{(event as any).sport}</Text>
-            <View style={styles.eventLocationRow}>
-              <Text style={styles.eventLocationIcon}>📍</Text>
-              <Text style={styles.eventLocation}>{location}</Text>
-              {(event as any).distance && (
-                <Text style={styles.eventDistance}>• {(event as any).distance}</Text>
-              )}
-            </View>
-          </View>
+        {/* Sport tag + skill badge on same row */}
+        <View style={styles.eventCardMeta}>
+          <Text style={styles.eventSport}>{(event as any).sport}</Text>
           <Badge label={(event as any).skillLevel} />
         </View>
+
+        {/* Game title — dominant */}
+        <Text style={styles.eventTitle} numberOfLines={2}>{(event as any).title}</Text>
+
+        {/* Location */}
+        <Text style={styles.eventLocation} numberOfLines={1}>{location}{(event as any).distance ? `  ·  ${(event as any).distance}` : ''}</Text>
+
+        {/* Divider */}
+        <View style={styles.eventDivider} />
+
+        {/* Bottom row: date + players */}
         <View style={styles.eventCardBottom}>
-          <View style={styles.eventMeta}>
-            <Text style={styles.eventMetaText}>
-              🕐 {typeof (event as any).date === 'string'
-                ? (event as any).date
-                : formatDate((event as any).date as Date)}
-            </Text>
-            <Text style={styles.eventMetaText}>
-              👥 {players}/{maxPlayers}
-            </Text>
-          </View>
-          <View style={styles.avatarStack}>
-            {[...Array(Math.min(3, players))].map((_, i) => (
-              <View key={i} style={[styles.avatarStackItem, { zIndex: 3 - i }]}>
-                <View style={styles.miniAvatar}>
-                  <Text style={styles.miniAvatarText}>{String.fromCharCode(65 + i)}</Text>
+          <Text style={styles.eventMetaText}>
+            {typeof (event as any).date === 'string'
+              ? (event as any).date
+              : formatDate((event as any).date as Date)}
+          </Text>
+          <View style={styles.eventMetaRight}>
+            <View style={styles.avatarStack}>
+              {[...Array(Math.min(3, players))].map((_, i) => (
+                <View key={i} style={[styles.avatarStackItem, { zIndex: 3 - i }]}>
+                  <View style={styles.miniAvatar}>
+                    <Text style={styles.miniAvatarText}>{String.fromCharCode(65 + i)}</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))}
+            </View>
+            <Text style={styles.eventMetaText}>{players}/{maxPlayers}</Text>
           </View>
         </View>
       </GlassCard>
@@ -257,9 +218,8 @@ function PlayerCard({ player }: { player: AIRecommendation }) {
       <Text style={styles.playerName} numberOfLines={1}>{player.displayName}</Text>
       <Text style={styles.playerSport}>{player.sport}</Text>
       <View style={styles.playerRating}>
-        <Text style={styles.starIcon}>⭐</Text>
         <Text style={styles.ratingText}>{player.rating}</Text>
-        <Text style={styles.matchCount}>({player.matchCount})</Text>
+        <Text style={styles.matchCount}>· {player.matchCount} games</Text>
       </View>
       <View style={styles.compatibilityBar}>
         <View style={[styles.compatibilityFill, { width: `${player.compatibilityScore}%` as any }]} />
@@ -321,12 +281,12 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.base,
   },
   greeting: {
-    fontSize: 13,
+    fontSize: 12,
     color: Colors.mutedForeground,
     marginBottom: 2,
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700',
     color: Colors.foreground,
   },
@@ -353,7 +313,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     color: Colors.foreground,
-    fontSize: 14,
+    fontSize: 15,
     height: '100%',
   },
   section: {
@@ -370,7 +330,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
     color: Colors.foreground,
   },
@@ -378,76 +338,64 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.primary,
   },
-  categoriesRow: {
-    paddingHorizontal: Spacing.lg,
-    gap: 12,
-  },
-  sportCard: {
-    width: 80,
-    height: 96,
-    borderRadius: BorderRadius.xl,
-    backgroundColor: Colors.glass,
-    borderWidth: 1,
-    borderColor: Colors.glassBorder,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  sportCardActive: {
-    borderColor: Colors.primaryBorder,
-    backgroundColor: Colors.primaryDim,
-  },
-  sportIcon: { fontSize: 28 },
-  sportName: {
-    fontSize: 11,
-    color: Colors.foreground + 'cc',
-    textAlign: 'center',
-  },
   eventsList: {
     paddingHorizontal: Spacing.lg,
     gap: 12,
   },
   eventCard: {
     padding: 16,
+    gap: 6,
   },
-  eventCardTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  eventSport: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.foreground,
-    marginBottom: 4,
-  },
-  eventLocationRow: {
+  eventCardMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
-  eventLocationIcon: { fontSize: 12 },
+  eventSport: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.primary,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  eventTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.foreground,
+    lineHeight: 24,
+  },
   eventLocation: {
     fontSize: 13,
     color: Colors.mutedForeground,
   },
-  eventDistance: {
-    fontSize: 13,
-    color: Colors.primary,
+  eventDivider: {
+    height: 1,
+    backgroundColor: Colors.border + '50',
+    marginVertical: 4,
   },
   eventCardBottom: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  eventMetaRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   eventMeta: {
     flexDirection: 'row',
-    gap: 16,
+    alignItems: 'center',
+    gap: 6,
   },
   eventMetaText: {
     fontSize: 12,
     color: Colors.mutedForeground,
+  },
+  eventMetaDivider: {
+    fontSize: 13,
+    color: Colors.mutedForeground + '60',
   },
   avatarStack: {
     flexDirection: 'row',
@@ -469,8 +417,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.mutedForeground,
     fontWeight: '600',
-  },
-  aiPicksHeader: {
+  },  aiPicksHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -484,7 +431,8 @@ const styles = StyleSheet.create({
   smartBadgeText: {
     fontSize: 11,
     color: Colors.primary,
-    fontWeight: '500',
+    fontWeight: '600',
+    letterSpacing: 0.4,
   },
   aiPicksRow: {
     paddingHorizontal: Spacing.lg,
@@ -497,21 +445,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   playerName: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '600',
     color: Colors.foreground,
     textAlign: 'center',
   },
   playerSport: {
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.mutedForeground,
   },
   playerRating: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
-  starIcon: { fontSize: 12 },
   ratingText: {
     fontSize: 13,
     fontWeight: '600',
@@ -535,7 +482,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   compatibilityText: {
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.primary,
     fontWeight: '500',
   },

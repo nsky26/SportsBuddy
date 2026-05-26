@@ -1,28 +1,33 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { MainTabParamList } from '../utils/types';
 import { HomeNavigator } from './HomeNavigator';
 import { DiscoverNavigator } from './DiscoverNavigator';
 import { ChatNavigator } from './ChatNavigator';
 import { ProfileScreen } from '../screens/ProfileScreen';
-import { Colors, BorderRadius } from '../theme';
+import { Colors } from '../theme';
 import { useChatStore } from '../store/chatStore';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 interface TabIconProps {
-  emoji: string;
+  name: React.ComponentProps<typeof Ionicons>['name'];
   label: string;
   focused: boolean;
   badge?: number;
 }
 
-function TabIcon({ emoji, label, focused, badge }: TabIconProps) {
+function TabIcon({ name, label, focused, badge }: TabIconProps) {
   return (
     <View style={styles.tabItem}>
       <View style={styles.iconWrapper}>
-        <Text style={[styles.emoji, focused && styles.emojiFocused]}>{emoji}</Text>
+        <Ionicons
+          name={name}
+          size={22}
+          color={focused ? Colors.primary : Colors.mutedForeground + '80'}
+        />
         {badge && badge > 0 ? (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
@@ -50,7 +55,7 @@ export function BottomTabNavigator() {
         component={HomeNavigator}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🏠" label="Home" focused={focused} />
+            <TabIcon name={focused ? 'home' : 'home-outline'} label="Home" focused={focused} />
           ),
         }}
       />
@@ -59,7 +64,7 @@ export function BottomTabNavigator() {
         component={DiscoverNavigator}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="🔍" label="Discover" focused={focused} />
+            <TabIcon name={focused ? 'compass' : 'compass-outline'} label="Discover" focused={focused} />
           ),
         }}
       />
@@ -68,7 +73,7 @@ export function BottomTabNavigator() {
         component={ChatNavigator}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="💬" label="Chat" focused={focused} badge={totalUnread} />
+            <TabIcon name={focused ? 'chatbubbles' : 'chatbubbles-outline'} label="Chat" focused={focused} badge={totalUnread} />
           ),
         }}
       />
@@ -77,7 +82,7 @@ export function BottomTabNavigator() {
         component={ProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <TabIcon emoji="👤" label="Profile" focused={focused} />
+            <TabIcon name={focused ? 'person' : 'person-outline'} label="Profile" focused={focused} />
           ),
         }}
       />
@@ -105,13 +110,6 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     position: 'relative',
-  },
-  emoji: {
-    fontSize: 22,
-    opacity: 0.5,
-  },
-  emojiFocused: {
-    opacity: 1,
   },
   tabLabel: {
     fontSize: 10,

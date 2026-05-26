@@ -9,18 +9,19 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useClerk } from '@clerk/clerk-expo';
 import { useAuthStore } from '../store/authStore';
 import { GlassCard, Avatar, PrimaryButton } from '../components/common';
 import { Colors, BorderRadius, Spacing } from '../theme';
 
-const MOCK_ACHIEVEMENTS = [
-  { id: '1', name: 'First Game', icon: '🎯', earned: true },
-  { id: '2', name: 'Team Player', icon: '🤝', earned: true },
-  { id: '3', name: 'MVP', icon: '⭐', earned: true },
-  { id: '4', name: '10 Win Streak', icon: '🔥', earned: true },
-  { id: '5', name: 'Century', icon: '💯', earned: true },
-  { id: '6', name: 'Legend', icon: '👑', earned: false },
+const MOCK_ACHIEVEMENTS: { id: string; name: string; iconSet: 'ion' | 'mci'; icon: string; earned: boolean }[] = [
+  { id: '1', name: 'First Game',    iconSet: 'ion', icon: 'game-controller-outline', earned: true },
+  { id: '2', name: 'Team Player',   iconSet: 'ion', icon: 'people-outline',          earned: true },
+  { id: '3', name: 'MVP',           iconSet: 'ion', icon: 'star-outline',            earned: true },
+  { id: '4', name: '10 Win Streak', iconSet: 'ion', icon: 'flame-outline',           earned: true },
+  { id: '5', name: 'Century',       iconSet: 'ion', icon: 'ribbon-outline',          earned: true },
+  { id: '6', name: 'Legend',        iconSet: 'mci', icon: 'crown-outline',           earned: false },
 ];
 
 const MOCK_MATCHES = [
@@ -28,15 +29,14 @@ const MOCK_MATCHES = [
   { id: '2', sport: 'Tennis', result: 'Won', score: '6-4, 6-3', date: '5 days ago' },
   { id: '3', sport: 'Soccer', result: 'Lost', score: '2-3', date: '1 week ago' },
 ];
-
 export function ProfileScreen() {
   const { user, logout } = useAuthStore();
   const { signOut } = useClerk();
 
   const stats = [
-    { label: 'Games Played', value: String(user?.stats?.gamesPlayed || 127), icon: '📅' },
-    { label: 'Win Rate', value: `${user?.stats?.winRate || 73}%`, icon: '🏆' },
-    { label: 'Teammates', value: String(user?.stats?.teammates || 89), icon: '👥' },
+    { label: 'Games Played', value: String(user?.stats?.gamesPlayed || 127), icon: 'game-controller-outline' },
+    { label: 'Win Rate',     value: `${user?.stats?.winRate || 73}%`,         icon: 'trophy-outline' },
+    { label: 'Teammates',    value: String(user?.stats?.teammates || 89),     icon: 'people-outline' },
   ];
 
   async function handleLogout() {
@@ -64,7 +64,7 @@ export function ProfileScreen() {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profile</Text>
           <TouchableOpacity style={styles.settingsButton}>
-            <Text style={styles.settingsIcon}>⚙️</Text>
+            <Ionicons name="settings-outline" size={20} color={Colors.mutedForeground} />
           </TouchableOpacity>
         </View>
 
@@ -76,17 +76,16 @@ export function ProfileScreen() {
               <View style={styles.avatarContainer}>
                 <Avatar name={user?.displayName || 'User'} photoURL={user?.photoURL} size={80} />
                 <TouchableOpacity style={styles.editAvatarButton}>
-                  <Text style={styles.editAvatarIcon}>✏️</Text>
+                  <Ionicons name="pencil" size={12} color={Colors.primaryForeground} />
                 </TouchableOpacity>
               </View>
               <View style={styles.profileInfo}>
                 <View style={styles.nameRow}>
                   <Text style={styles.displayName}>{user?.displayName || 'John Doe'}</Text>
-                  <Text style={styles.verifiedIcon}>🛡️</Text>
                 </View>
                 <Text style={styles.username}>@{user?.username || user?.displayName?.toLowerCase().replace(' ', '') || 'user'}</Text>
                 <View style={styles.ratingRow}>
-                  <Text style={styles.starIcon}>⭐</Text>
+                  <Ionicons name="star" size={14} color={Colors.primary} />
                   <Text style={styles.rating}>{user?.rating || 4.9}</Text>
                   <Text style={styles.reviewCount}>({user?.reviewCount || 127} reviews)</Text>
                 </View>
@@ -107,8 +106,8 @@ export function ProfileScreen() {
           <View style={styles.statsGrid}>
             {stats.map((stat) => (
               <GlassCard key={stat.label} style={styles.statCard}>
-                <View style={styles.statIcon}>
-                  <Text style={styles.statIconText}>{stat.icon}</Text>
+                <View style={styles.statIconBox}>
+                  <Ionicons name={stat.icon} size={20} color={Colors.primary} />
                 </View>
                 <Text style={styles.statValue}>{stat.value}</Text>
                 <Text style={styles.statLabel}>{stat.label}</Text>
@@ -130,9 +129,12 @@ export function ProfileScreen() {
                   key={a.id}
                   style={[styles.achievementCard, !a.earned && styles.achievementCardLocked]}
                 >
-                  <Text style={[styles.achievementIcon, !a.earned && styles.achievementIconLocked]}>
-                    {a.icon}
-                  </Text>
+                  <View style={[styles.achievementIconBox, !a.earned && styles.achievementIconBoxLocked]}>
+                    {a.iconSet === 'ion'
+                      ? <Ionicons name={a.icon} size={22} color={a.earned ? Colors.primary : Colors.mutedForeground + '40'} />
+                      : <MaterialCommunityIcons name={a.icon} size={22} color={a.earned ? Colors.primary : Colors.mutedForeground + '40'} />
+                    }
+                  </View>
                   <Text style={[styles.achievementName, !a.earned && styles.achievementNameLocked]}>
                     {a.name}
                   </Text>
@@ -158,7 +160,11 @@ export function ProfileScreen() {
                       { backgroundColor: match.result === 'Won' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' },
                     ]}
                   >
-                    <Text style={styles.matchResultEmoji}>{match.result === 'Won' ? '🏆' : '😔'}</Text>
+                    <Ionicons
+                      name={match.result === 'Won' ? 'checkmark-circle' : 'close-circle'}
+                      size={22}
+                      color={match.result === 'Won' ? Colors.success : Colors.error}
+                    />
                   </View>
                   <View style={styles.matchInfo}>
                     <Text style={styles.matchSport}>{match.sport}</Text>
@@ -222,7 +228,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  settingsIcon: { fontSize: 18 },
   scrollContent: {
     paddingHorizontal: Spacing.lg,
     paddingBottom: 100,
@@ -258,7 +263,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  editAvatarIcon: { fontSize: 12 },
   profileInfo: { flex: 1 },
   nameRow: {
     flexDirection: 'row',
@@ -271,7 +275,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.foreground,
   },
-  verifiedIcon: { fontSize: 16 },
   username: {
     fontSize: 13,
     color: Colors.mutedForeground,
@@ -282,7 +285,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
   },
-  starIcon: { fontSize: 14 },
   rating: {
     fontSize: 15,
     fontWeight: '600',
@@ -317,17 +319,17 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
-  statIcon: {
+  statIconBox: {
     width: 40,
     height: 40,
     borderRadius: BorderRadius.md,
     backgroundColor: Colors.primaryDim,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
-  statIconText: { fontSize: 18 },
   statValue: {
     fontSize: 20,
     fontWeight: '700',
@@ -358,22 +360,32 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   achievementCard: {
-    width: 80,
-    height: 96,
+    width: 88,
+    height: 88,
     borderRadius: BorderRadius.xl,
     backgroundColor: Colors.glass,
     borderWidth: 1,
     borderColor: Colors.glassBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 6,
+    paddingHorizontal: 8,
   },
   achievementCardLocked: {
     backgroundColor: 'rgba(24,24,30,0.3)',
     borderColor: Colors.border + '40',
   },
-  achievementIcon: { fontSize: 28 },
-  achievementIconLocked: { opacity: 0.3 },
+  achievementIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.primaryDim,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  achievementIconBoxLocked: {
+    backgroundColor: Colors.secondary,
+  },
   achievementName: {
     fontSize: 10,
     color: Colors.foreground,
@@ -397,7 +409,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  matchResultEmoji: { fontSize: 20 },
   matchInfo: { flex: 1 },
   matchSport: {
     fontSize: 14,
