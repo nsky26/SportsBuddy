@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,11 @@ import { Colors } from '../theme';
 const { width, height } = Dimensions.get('window');
 
 export function SplashScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.8)).current;
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const textFade = useRef(new Animated.Value(0)).current;
+  const [fadeAnim] = useState(() => new Animated.Value(0));
+  const [scaleAnim] = useState(() => new Animated.Value(0.8));
+  const [progressAnim] = useState(() => new Animated.Value(0));
+  const [rotateAnim] = useState(() => new Animated.Value(0));
+  const [textFade] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     // Logo entrance
@@ -62,6 +62,7 @@ export function SplashScreen() {
       easing: Easing.inOut(Easing.quad),
       useNativeDriver: false,
     }).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const spin = rotateAnim.interpolate({

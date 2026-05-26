@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -66,11 +66,7 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
   const isParticipant = event?.participants.some((p) => p.uid === user?.uid);
   const isFull = (event?.currentPlayers || 0) >= (event?.maxPlayers || 0);
 
-  useEffect(() => {
-    loadEvent();
-  }, [eventId]);
-
-  async function loadEvent() {
+  const loadEvent = useCallback(async () => {
     setLoading(true);
     try {
       if (eventId.startsWith('mock_')) {
@@ -84,7 +80,12 @@ export function MatchDetailsScreen({ navigation, route }: Props) {
     } finally {
       setLoading(false);
     }
-  }
+  }, [eventId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadEvent();
+  }, [loadEvent]);
 
   async function handleJoin() {
     if (!user || !event) return;

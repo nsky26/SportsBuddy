@@ -85,9 +85,9 @@ export function ChatScreen({ navigation, route }: Props) {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const flatListRef = useRef<FlatList>(null);
-  const dot1 = useRef(new Animated.Value(0)).current;
-  const dot2 = useRef(new Animated.Value(0)).current;
-  const dot3 = useRef(new Animated.Value(0)).current;
+  const [dot1] = useState(() => new Animated.Value(0));
+  const [dot2] = useState(() => new Animated.Value(0));
+  const [dot3] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     // Subscribe to real messages if not mock
@@ -113,6 +113,7 @@ export function ChatScreen({ navigation, route }: Props) {
     animate(dot1, 0);
     animate(dot2, 200);
     animate(dot3, 400);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSend() {

@@ -43,6 +43,17 @@ Alternatively, you can run the platform-specific scripts:
 - **iOS**: `npm run ios`
 - **Web**: `npm run web`
 
+## 🧪 Linting, Type Checking & Testing
+
+To ensure code quality, type safety, and correctness, the project uses ESLint, TypeScript, and Jest:
+
+| Command | Description |
+|---|---|
+| `npm run lint` | Run ESLint to scan for style and quality issues |
+| `npm run typecheck` | Run TypeScript compiler in no-emit mode |
+| `npm run test` | Run all unit and component tests via Jest |
+| `npm run test:watch` | Run Jest in interactive watch mode |
+
 ## 🛠 Tech Stack
 
 - **React Native**: ^0.85.3

@@ -16,7 +16,7 @@ import { useSignIn, useOAuth } from '@clerk/clerk-expo';
 import { AuthStackParamList } from '../../utils/types';
 import { useAuthStore } from '../../store/authStore';
 import { InputField, PrimaryButton } from '../../components/common';
-import { Colors, BorderRadius } from '../../theme';
+import { Colors } from '../../theme';
 import { isValidEmail, isValidPassword } from '../../utils/helpers';
 
 // Simple icon components

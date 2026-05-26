@@ -37,7 +37,7 @@ export function ProfileScreen() {
     { label: 'Games Played', value: String(user?.stats?.gamesPlayed || 127), icon: 'game-controller-outline' },
     { label: 'Win Rate',     value: `${user?.stats?.winRate || 73}%`,         icon: 'trophy-outline' },
     { label: 'Teammates',    value: String(user?.stats?.teammates || 89),     icon: 'people-outline' },
-  ];
+  ] as const;
 
   async function handleLogout() {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -131,8 +131,8 @@ export function ProfileScreen() {
                 >
                   <View style={[styles.achievementIconBox, !a.earned && styles.achievementIconBoxLocked]}>
                     {a.iconSet === 'ion'
-                      ? <Ionicons name={a.icon} size={22} color={a.earned ? Colors.primary : Colors.mutedForeground + '40'} />
-                      : <MaterialCommunityIcons name={a.icon} size={22} color={a.earned ? Colors.primary : Colors.mutedForeground + '40'} />
+                      ? <Ionicons name={a.icon as React.ComponentProps<typeof Ionicons>['name']} size={22} color={a.earned ? Colors.primary : Colors.mutedForeground + '40'} />
+                      : <MaterialCommunityIcons name={a.icon as React.ComponentProps<typeof MaterialCommunityIcons>['name']} size={22} color={a.earned ? Colors.primary : Colors.mutedForeground + '40'} />
                     }
                   </View>
                   <Text style={[styles.achievementName, !a.earned && styles.achievementNameLocked]}>
