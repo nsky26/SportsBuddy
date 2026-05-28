@@ -64,6 +64,18 @@ export interface NearbyEvent extends Omit<SportEvent, 'distance'> {
   distance: DistanceResult;
 }
 
+export interface NearbySportsGround {
+  id: string;
+  name: string;
+  sports: string[];
+  location: Coordinates & {
+    address?: string;
+    city?: string;
+  };
+  eventCount: number;
+  distance: DistanceResult;
+}
+
 export interface LocationSuggestion {
   title: string;
   description: string;

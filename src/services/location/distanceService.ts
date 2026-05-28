@@ -10,15 +10,16 @@ export const distanceService = {
       meters,
       kilometers: meters / 1000,
       miles: meters / METERS_PER_MILE,
-      readable: this.formatDistance(meters),
+      readable: this.formatDistance(meters, true),
     };
   },
 
-  formatDistance(meters: number): string {
-    if (meters < 1000) return `${Math.round(meters)} m`;
+  formatDistance(meters: number, includeAway = false): string {
+    const suffix = includeAway ? ' away' : '';
+    if (meters < 1000) return `${Math.round(meters)} m${suffix}`;
     const kilometers = meters / 1000;
-    if (kilometers < 10) return `${kilometers.toFixed(1)} km`;
-    return `${Math.round(kilometers)} km`;
+    if (kilometers < 10) return `${kilometers.toFixed(1)} km${suffix}`;
+    return `${Math.round(kilometers)} km${suffix}`;
   },
 
   isNearby(from: Coordinates, to: Coordinates, radiusMeters = 10000): boolean {

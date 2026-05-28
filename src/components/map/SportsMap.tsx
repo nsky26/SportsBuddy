@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { PROVIDER_GOOGLE, type Region } from 'react-native-maps';
+import MapView, { Marker, type Region } from 'react-native-maps';
 import type { Coordinates, NearbyEvent, NearbyUser } from '../../services/locationService';
 import { Colors, BorderRadius } from '../../theme';
 import { EventMapMarkers } from './EventMapMarkers';
@@ -32,7 +32,6 @@ function SportsMapComponent({
   return (
     <View style={styles.container}>
       <MapView
-        provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={region}
         region={userLocation ? region : undefined}
@@ -45,13 +44,16 @@ function SportsMapComponent({
         {teammates.map((teammate) => {
           if (!teammate.location?.latitude || !teammate.location.longitude) return null;
           return (
-            <UserLocationMarker
+            <Marker
               key={teammate.uid}
               coordinate={{
                 latitude: teammate.location.latitude,
                 longitude: teammate.location.longitude,
               }}
               title={teammate.displayName}
+              description={`${teammate.sports?.[0] || 'Player'} • ${teammate.distance.readable}`}
+              pinColor="#3b82f6"
+              onPress={() => onTeammatePress?.(teammate)}
             />
           );
         })}

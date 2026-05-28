@@ -49,7 +49,3 @@ export function hasCoordinates(value: unknown): value is Coordinates {
   const coordinates = value as Coordinates;
   return typeof coordinates.latitude === 'number' && typeof coordinates.longitude === 'number';
 }
-
-export function getGoogleMapsApiKey(): string {
-  return process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-}

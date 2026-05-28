@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import type { LocationSubscription } from 'expo-location';
+import { Alert, Linking } from 'react-native';
 import type {
   Coordinates,
   LocationPermissionResult,
@@ -55,6 +56,23 @@ export const locationService = {
         error: 'Unable to request location permission. Please try again.',
       };
     }
+  },
+
+  async requestPermissionsWithAlert(retry = false): Promise<LocationPermissionResult> {
+    const result = await this.requestPermissions(retry);
+    if (!result.granted && result.error) {
+      Alert.alert(
+        'Location needed',
+        result.error,
+        result.canAskAgain
+          ? [{ text: 'OK' }]
+          : [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            ]
+      );
+    }
+    return result;
   },
 
   async getCurrentLocation(forceRefresh = false): Promise<Coordinates | null> {
@@ -137,6 +155,12 @@ export const locationService = {
   async getNearbyEvents(options: NearbyQueryOptions) {
     return nearbyService.getNearbyEvents(options);
   },
+
+  async getNearbySportsGrounds(options: NearbyQueryOptions) {
+    return nearbyService.getNearbySportsGrounds(options);
+  },
+
+  suggestLocalActivities: nearbyService.suggestLocalActivities.bind(nearbyService),
 
   calculateDistance: distanceService.calculateDistance.bind(distanceService),
   formatDistance: distanceService.formatDistance.bind(distanceService),
