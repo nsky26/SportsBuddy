@@ -23,6 +23,8 @@ export const FIRESTORE_COLLECTIONS = {
   MESSAGES: 'messages',
   NOTIFICATIONS: 'notifications',
   REVIEWS: 'reviews',
+  USER_BEHAVIOR: 'userBehavior',
+  RECOMMENDATIONS: 'recommendations',
 };
 
 export const STORAGE_KEYS = {
