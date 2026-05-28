@@ -1,0 +1,75 @@
+import { collection, doc, getDocs, limit, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { db } from '../../firebase/config';
+import { FIRESTORE_COLLECTIONS } from '../../constants';
+import type { SportEvent, User } from '../../utils/types';
+import type { Coordinates, NearbyEvent, NearbyQueryOptions, NearbyUser, UserLocationRecord } from './locationTypes';
+import { distanceService } from './distanceService';
+import { geocodingService } from './geocodingService';
+import { hasCoordinates, normalizeSports } from './locationHelpers';
+
+export const nearbyService = {
+  async updateUserLocation(userId: string, coordinates: Coordinates): Promise<UserLocationRecord> {
+    const address = await geocodingService.reverseGeocode(coordinates.latitude, coordinates.longitude);
+    const locationRecord: UserLocationRecord = {
+      ...coordinates,
+      city: address.city,
+      region: address.region,
+      country: address.country,
+      updatedAt: new Date(),
+    };
+
+    await setDoc(
+      doc(db, FIRESTORE_COLLECTIONS.USERS, userId),
+      {
+        location: locationRecord,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return locationRecord;
+  },
+
+  async getNearbyUsers(options: NearbyQueryOptions): Promise<NearbyUser[]> {
+    const usersQuery = query(
+      collection(db, FIRESTORE_COLLECTIONS.USERS),
+      orderBy('rating', 'desc'),
+      limit(options.limitCount || 50)
+    );
+    const snapshot = await getDocs(usersQuery);
+    const sports = normalizeSports(options.sports);
+
+    return snapshot.docs
+      .map((document) => ({ uid: document.id, ...document.data() }) as User)
+      .filter((user) => hasCoordinates(user.location))
+      .filter((user) =>
+        sports.length === 0 || user.sports?.some((sport) => sports.includes(sport.toLowerCase()))
+      )
+      .filter((user) => !options.skillLevel || user.skillLevel === options.skillLevel)
+      .map((user) => ({
+        ...user,
+        distance: distanceService.calculateDistance(options.center, user.location as Coordinates),
+      }))
+      .filter((user) => user.distance.meters <= (options.radiusMeters || 25000))
+      .sort((a, b) => a.distance.meters - b.distance.meters);
+  },
+
+  async getNearbyEvents(options: NearbyQueryOptions): Promise<NearbyEvent[]> {
+    const constraints = [where('status', '==', 'upcoming'), orderBy('date', 'asc'), limit(options.limitCount || 50)];
+    const eventsQuery = query(collection(db, FIRESTORE_COLLECTIONS.EVENTS), ...constraints);
+    const snapshot = await getDocs(eventsQuery);
+    const sports = normalizeSports(options.sports);
+
+    return snapshot.docs
+      .map((document) => ({ id: document.id, ...document.data() }) as SportEvent)
+      .filter((event) => hasCoordinates(event.location))
+      .filter((event) => sports.length === 0 || sports.includes(event.sport.toLowerCase()))
+      .filter((event) => !options.skillLevel || event.skillLevel === options.skillLevel)
+      .map((event) => ({
+        ...event,
+        distance: distanceService.calculateDistance(options.center, event.location as Coordinates),
+      }))
+      .filter((event) => event.distance.meters <= (options.radiusMeters || 25000))
+      .sort((a, b) => a.distance.meters - b.distance.meters);
+  },
+};
