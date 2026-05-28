@@ -25,6 +25,8 @@ export const FIRESTORE_COLLECTIONS = {
   REVIEWS: 'reviews',
   USER_BEHAVIOR: 'userBehavior',
   RECOMMENDATIONS: 'recommendations',
+  USER_NOTIFICATIONS: 'userNotifications',
+  PUSH_TOKENS: 'pushTokens',
 };
 
 export const STORAGE_KEYS = {

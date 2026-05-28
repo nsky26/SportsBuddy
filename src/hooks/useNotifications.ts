@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 import { notificationService } from '../services/notificationService';
 import { useAuthStore } from '../store/authStore';
-import { updateUserProfile } from '../firebase/firestore';
 
 export function useNotifications() {
   const { user } = useAuthStore();
@@ -10,17 +9,7 @@ export function useNotifications() {
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   useEffect(() => {
-    // Register for push notifications
-    notificationService.registerForPushNotifications().then(async (token) => {
-      if (token && user?.uid) {
-        // Save FCM token to user profile
-        try {
-          await updateUserProfile(user.uid, { fcmToken: token });
-        } catch {
-          // Non-critical
-        }
-      }
-    });
+    notificationService.registerForPushNotifications(user?.uid).catch(() => undefined);
 
     // Listen for notifications received while app is open
     notificationListener.current = notificationService.addNotificationListener(
@@ -44,6 +33,9 @@ export function useNotifications() {
 
   return {
     scheduleReminder: notificationService.scheduleEventReminder.bind(notificationService),
+    scheduleMatchReminders: notificationService.scheduleMatchReminders.bind(notificationService),
     sendLocal: notificationService.sendLocalNotification.bind(notificationService),
+    markAsRead: notificationService.markAsRead.bind(notificationService),
+    markAllAsRead: notificationService.markAllAsRead.bind(notificationService),
   };
 }

@@ -113,7 +113,18 @@ export interface AppNotification {
   userId: string;
   title: string;
   body: string;
-  type: 'event_reminder' | 'join_alert' | 'chat_message' | 'system';
+  type:
+    | 'event_reminder'
+    | 'join_alert'
+    | 'join_request_accepted'
+    | 'join_request_rejected'
+    | 'chat_message'
+    | 'event_cancelled'
+    | 'event_updated'
+    | 'schedule_changed'
+    | 'location_changed'
+    | 'sports_alert'
+    | 'system';
   data?: Record<string, string>;
   read: boolean;
   createdAt: Date;
@@ -163,6 +174,8 @@ export type HomeStackParamList = {
   MatchDetails: { eventId: string };
   CreateGame: undefined;
   ChatScreen: { chatId: string; eventTitle: string };
+  Notifications: undefined;
+  NotificationSettings: undefined;
   AllEvents: undefined;
   AllPlayers: undefined;
 };
